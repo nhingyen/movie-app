@@ -1,0 +1,84 @@
+# ========================
+# 📁 Hệ thống và IDE
+# ========================
+# VS Code
+.vscode/
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+
+# Không push các file hệ thống
+.metadata
+*.iml
+*.lock
+*.tmp
+*.swp
+*.DS_Store
+
+# Flutter / Dart tooling
+.dart_tool/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+.melos_tool/
+
+# Package config (không cần push)
+package_config.json
+package_graph.json
+package_config_subset*
+
+# ========================
+# ⚙️ Build Output
+# ========================
+build/
+
+# Android build & Gradle
+android/.gradle/
+android/app/build/
+android/local.properties
+
+# iOS build
+ios/build/
+ios/Pods/
+ios/.symlinks/
+ios/Runner.xcworkspace/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+
+# Web build (nếu có)
+web/build/
+
+# ========================
+# 🔐 Secrets & Env
+# ========================
+.env
+.env.*
+google-services.json
+GoogleService-Info.plist
+
+# ========================
+# ⚙️ CMake, Ninja (nếu dùng native plugin)
+# ========================
+**/CMakeCache.txt
+**/CMakeFiles/
+**/cmake_install.cmake
+**/Makefile
+**/rules.ninja
+**/*.ninja
+**/CMakeOutput.log
+**/cmake.check_cache
+
+# ========================
+# 📦 Output files
+# ========================
+*.apk
+*.ipa
+*.aab
+*.app
+*.exe
+*.dll
+*.dSYM
+
+windows/
+
