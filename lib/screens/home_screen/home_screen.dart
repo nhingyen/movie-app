@@ -1,7 +1,10 @@
-import 'package:carousel_slider/carousel_slider.dart';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:movie_app/screens/home_screen/bloc/home_bloc.dart';
+import 'package:movie_app/screens/popular_screen/popular_screen.dart';
+import 'package:movie_app/screens/toprate_screen/toprated_screen.dart';
 import 'package:movie_app/widgets/carousel_home.dart';
 import 'package:movie_app/widgets/footer/footer_home.dart';
 import 'package:movie_app/widgets/header_home.dart';
@@ -119,7 +122,7 @@ class HomeScreenContent extends StatelessWidget {
                                 style: TextStyle(color: Colors.white),
                               ),
                             ),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 2),
                           Row(
                             children: [
                               Text(
@@ -131,7 +134,17 @@ class HomeScreenContent extends StatelessWidget {
                               ),
                               Spacer(),
                               IconButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => PopularScreen(
+                                        movies: upcomingMovies,
+                                        title: 'Phim hay',
+                                      ),
+                                    ),
+                                  );
+                                },
                                 icon: Icon(
                                   Icons.navigate_next,
                                   color: Colors.white,
@@ -149,7 +162,7 @@ class HomeScreenContent extends StatelessWidget {
                               height: 235, // Chiều cao cố định để chứa các item
                               child: ListView.builder(
                                 scrollDirection: Axis.horizontal, // Cuộn ngang
-                                itemCount: popularMovies.length,
+                                itemCount: min(7, popularMovies.length),
                                 itemBuilder: (context, index) {
                                   final movie = popularMovies[index];
                                   return Container(
@@ -236,9 +249,38 @@ class HomeScreenContent extends StatelessWidget {
                               ),
                             ),
                           const SizedBox(height: 10),
-                          const Text(
-                            'Phim Top Nổi Bật',
-                            style: TextStyle(color: Colors.white, fontSize: 18),
+                          Row(
+                            children: [
+                              Text(
+                                'Phim Nổi Bật',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                ),
+                              ),
+                              Spacer(),
+                              IconButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => TopRatedScreen(
+                                        movies: popularMovies,
+                                        title: 'Phim Nổi Bật',
+                                      ),
+                                    ),
+                                  );
+                                },
+                                icon: Icon(
+                                  Icons.navigate_next,
+                                  color: Colors.white,
+                                  size: 30,
+                                ),
+                                padding: EdgeInsets
+                                    .zero, // ← Bỏ padding mặc định của IconButton
+                                constraints: BoxConstraints(),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 10),
                           if (topRatedMovies.isNotEmpty)
@@ -246,7 +288,7 @@ class HomeScreenContent extends StatelessWidget {
                               height: 235, // Chiều cao cố định để chứa các item
                               child: ListView.builder(
                                 scrollDirection: Axis.horizontal, // Cuộn ngang
-                                itemCount: topRatedMovies.length,
+                                itemCount: min(7, topRatedMovies.length),
                                 itemBuilder: (context, index) {
                                   final movie = topRatedMovies[index];
                                   return Container(
