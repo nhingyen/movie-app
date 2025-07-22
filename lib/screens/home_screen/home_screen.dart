@@ -3,8 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:movie_app/screens/home_screen/bloc/home_bloc.dart';
-import 'package:movie_app/screens/popular_screen/popular_screen.dart';
-import 'package:movie_app/screens/toprate_screen/toprated_screen.dart';
+import 'package:movie_app/screens/list_movie/movie_list_screen.dart';
 import 'package:movie_app/widgets/carousel_home.dart';
 import 'package:movie_app/widgets/footer/footer_home.dart';
 import 'package:movie_app/widgets/header_home.dart';
@@ -58,10 +57,7 @@ class HomeScreenContent extends StatelessWidget {
                           //   style: TextStyle(color: Colors.white, fontSize: 18),
                           // ),
                           Padding(
-                            padding: EdgeInsets.symmetric(
-                              // horizontal: 3,
-                              vertical: 3,
-                            ),
+                            padding: EdgeInsets.symmetric(vertical: 3),
                             child: Row(
                               children: [
                                 MaterialButton(
@@ -138,9 +134,9 @@ class HomeScreenContent extends StatelessWidget {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => PopularScreen(
-                                        movies: upcomingMovies,
-                                        title: 'Phim hay',
+                                      builder: (context) => MovieListScreen(
+                                        title: 'Phim Thịnh Hành',
+                                        endpoint: 'movie/popular',
                                       ),
                                     ),
                                   );
@@ -264,9 +260,9 @@ class HomeScreenContent extends StatelessWidget {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => TopRatedScreen(
-                                        movies: popularMovies,
+                                      builder: (context) => MovieListScreen(
                                         title: 'Phim Nổi Bật',
+                                        endpoint: 'movie/top_rated',
                                       ),
                                     ),
                                   );
