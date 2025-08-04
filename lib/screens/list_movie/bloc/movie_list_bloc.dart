@@ -1,12 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:http/http.dart' as http;
-import 'package:movie_app/api/constant.dart';
-import 'dart:convert';
 import 'package:movie_app/model/movie_model.dart';
 import 'package:movie_app/screens/list_movie/bloc/movie_list_event.dart';
 import 'package:movie_app/screens/list_movie/bloc/movie_list_state.dart';
 
 class MovieListBloc extends Bloc<MovieListEvent, MovieListState> {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   MovieListBloc() : super(MovieListLoading()) {
     on<LoadMovieListEvent>(_onLoadMovieList);
   }
@@ -17,22 +17,20 @@ class MovieListBloc extends Bloc<MovieListEvent, MovieListState> {
   ) async {
     emit(MovieListLoading());
     try {
-      final response = await http.get(
-        Uri.parse(
-          'https://api.themoviedb.org/3/${event.endpoint}?api_key=$apiKey&language=vi-VN',
-        ),
-      );
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final movies = (data['results'] as List<dynamic>)
-            .map((movie) => MovieModel.fromMap(movie))
-            .toList();
-        emit(MovieListLoaded(movies));
-      } else {
-        emit(const MovieListError('Lỗi khi tải danh sách phim'));
-      }
+      final snapshot = await _firestore
+          .collection('movies')
+          .where('endpoint', isEqualTo: event.endpoint)
+          .get();
+
+      final movies = snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id; // Gắn ID Firestore
+        return MovieModel.fromMap(data);
+      }).toList();
+
+      emit(MovieListLoaded(movies));
     } catch (e) {
-      emit(MovieListError('Lỗi: $e'));
+      emit(MovieListError('Lỗi khi lấy phim từ Firestore: $e'));
     }
   }
 }

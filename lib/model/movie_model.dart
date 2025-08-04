@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class MovieModel {
   final String title;
   final String posterPath;
@@ -8,11 +10,10 @@ class MovieModel {
   final String overview;
   final List<int>? genreIds;
   final List<Genre>? genres;
-  final String? status; // Trạng thái
-  final double? popularity; // Độ phổ biến
-  final int? voteCount;
   final int? runtime;
-  final bool? video; // Có phải video không
+  final bool? video;
+  final String? category;
+  final DateTime? timestamp;
 
   MovieModel({
     required this.title,
@@ -24,28 +25,29 @@ class MovieModel {
     required this.overview,
     this.genreIds,
     this.genres,
-    this.status,
-    this.popularity,
-    this.voteCount,
     this.runtime,
     this.video,
+    this.category,
+    this.timestamp,
   });
 
   factory MovieModel.fromMap(Map<String, dynamic> map) {
     return MovieModel(
       title: map['title'] ?? '',
-      posterPath: map['poster_path'] ?? '',
+      posterPath:
+          map['posterPath'] ?? map['poster'] ?? '', // Hỗ trợ cả 2 tên field
       id: map['id'].toString(),
-      backdropPath: map['backdrop_path'] ?? '',
-      voteAverage: (map['vote_average'] as num?)?.toDouble() ?? 0.0,
-      releaseDate: map['release_date'] ?? '',
+      backdropPath: map['backdropPath'] ?? map['backdrop'] ?? '',
+      voteAverage: (map['voteAverage'] as num?)?.toDouble() ?? 0.0,
+      releaseDate: map['releaseDate'] ?? '',
       overview: map['overview'],
       runtime: map['runtime'],
-      status: map['status'],
-      voteCount: map['vote_count]'],
       video: map['video'],
-      genreIds: (map['genre_ids'] as List<dynamic>?)
-          ?.cast<int>(), // Lấy genre_ids
+      category: map['category'],
+      timestamp: (map['timestamp'] as Timestamp?)?.toDate(),
+      genreIds:
+          (map['genreIds'] as List<dynamic>?)?.cast<int>() ??
+          (map['genre_ids'] as List<dynamic>?)?.cast<int>(), // Lấy genre_ids
       genres: (map['genres'] as List<dynamic>?)
           ?.map((genre) => Genre.fromMap(genre))
           .toList(), // Lấy genres nếu có (từ /movie/{movie_id})
@@ -64,11 +66,48 @@ class MovieModel {
       'genre_ids': genreIds,
       'genres': genres?.map((genre) => genre.toMap()).toList(),
       'runtime': runtime,
-      'status': status,
-      'popularity': popularity,
-      'vote_count': voteCount,
       'video': video,
+      'category': category,
+      'timestamp': FieldValue.serverTimestamp(), // Firestore timestamp
     };
+  }
+
+  // Thêm copyWith method để dễ dàng tạo bản sao
+  MovieModel copyWith({
+    String? title,
+    String? posterPath,
+    String? id,
+    String? backdropPath,
+    double? voteAverage,
+    String? releaseDate,
+    String? overview,
+    List<int>? genreIds,
+    List<Genre>? genres,
+    int? runtime,
+    bool? video,
+    String? category,
+    DateTime? timestamp,
+  }) {
+    return MovieModel(
+      title: title ?? this.title,
+      posterPath: posterPath ?? this.posterPath,
+      id: id ?? this.id,
+      backdropPath: backdropPath ?? this.backdropPath,
+      voteAverage: voteAverage ?? this.voteAverage,
+      releaseDate: releaseDate ?? this.releaseDate,
+      overview: overview ?? this.overview,
+      genreIds: genreIds ?? this.genreIds,
+      genres: genres ?? this.genres,
+      runtime: runtime ?? this.runtime,
+      video: video ?? this.video,
+      category: category ?? this.category,
+      timestamp: timestamp ?? this.timestamp,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'MovieModel(id: $id, title: $title, category: $category)';
   }
 }
 

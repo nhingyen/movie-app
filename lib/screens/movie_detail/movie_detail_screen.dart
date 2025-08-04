@@ -128,7 +128,7 @@ class MovieDetailScreen extends StatelessWidget {
                                   '${displayMovie.releaseDate!.split('-')[0]}',
                                   style: const TextStyle(
                                     color: Colors.white70,
-                                    fontSize: 16,
+                                    fontSize: 14,
                                   ),
                                 ),
                               SizedBox(width: 12),
@@ -137,7 +137,7 @@ class MovieDetailScreen extends StatelessWidget {
                                   '${displayMovie.runtime} phút',
                                   style: const TextStyle(
                                     color: Colors.white70,
-                                    fontSize: 16,
+                                    fontSize: 14,
                                   ),
                                 ),
                             ],
@@ -252,7 +252,6 @@ class MovieDetailScreen extends StatelessWidget {
                               fontSize: 14,
                             ),
                           ),
-
                           Padding(
                             padding: const EdgeInsets.all(5),
                             child: FutureBuilder<List<MovieModel>>(
