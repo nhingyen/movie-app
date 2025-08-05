@@ -1,42 +1,25 @@
-import 'dart:convert';
 import 'dart:math';
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:movie_app/api/constant.dart';
 import 'package:movie_app/model/movie_model.dart';
 import 'package:movie_app/screens/list_movie/movie_list_screen.dart';
 import 'package:movie_app/screens/movie_detail/bloc/movie_detail_bloc.dart';
 import 'package:movie_app/screens/movie_detail/bloc/movie_detail_event.dart';
 import 'package:movie_app/screens/movie_detail/bloc/movie_detail_state.dart';
+import 'package:movie_app/services/firestore_service.dart';
 
 class MovieDetailScreen extends StatelessWidget {
-  final MovieModel movie;
+  final String movieId;
 
-  const MovieDetailScreen({super.key, required this.movie});
-
-  Future<List<MovieModel>> _fetchPopularMovies() async {
-    final response = await http.get(
-      Uri.parse(
-        'https://api.themoviedb.org/3/movie/popular?api_key=$apiKey&language=vi-VN',
-      ),
-    );
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      return (data['results'] as List<dynamic>)
-          .map((item) => MovieModel.fromMap(item))
-          .toList();
-    } else {
-      throw Exception('Lỗi khi tải phim thịnh hành: ${response.statusCode}');
-    }
-  }
+  const MovieDetailScreen({super.key, required this.movieId});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) =>
-          MovieDetailBloc()..add(LoadMovieDetailEvent(movie.id)),
+          MovieDetailBloc(firestoreService: FirestoreService())
+            ..add(LoadMovieDetailEvent(movieId)),
       child: Scaffold(
         backgroundColor: const Color.fromARGB(31, 43, 42, 42),
         body: BlocBuilder<MovieDetailBloc, MovieDetailState>(
@@ -45,15 +28,29 @@ class MovieDetailScreen extends StatelessWidget {
               return const Center(child: CircularProgressIndicator());
             } else if (state is MovieDetailError) {
               return Center(
-                child: Text(
-                  state.message,
-                  style: const TextStyle(color: Colors.white),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      state.message,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    const SizedBox(height: 10),
+                    ElevatedButton(
+                      onPressed: () {
+                        context.read<MovieDetailBloc>().add(
+                          LoadMovieDetailEvent(movieId),
+                        );
+                      },
+                      child: const Text('Thử lại'),
+                    ),
+                  ],
                 ),
               );
             } else if (state is MovieDetailLoaded) {
               final displayMovie = state.movie;
-              final trailerKey = state.trailerKey;
-
+              final trailerKey = state.youtubeKey;
+              final popularMovies = state.relatedMovies; // Lấy từ trạng thái
               return SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,7 +58,7 @@ class MovieDetailScreen extends StatelessWidget {
                     Stack(
                       children: [
                         Image.network(
-                          'https://image.tmdb.org/t/p/w500/${displayMovie.posterPath ?? displayMovie.backdropPath}',
+                          'https://image.tmdb.org/t/p/w500/${displayMovie.posterPath ?? displayMovie.backdropPath ?? ''}',
                           height: 350,
                           width: double.infinity,
                           fit: BoxFit.cover,
@@ -81,10 +78,8 @@ class MovieDetailScreen extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               InkWell(
-                                onTap: () {
-                                  Navigator.pop(context);
-                                },
-                                child: Icon(
+                                onTap: () => Navigator.pop(context),
+                                child: const Icon(
                                   Icons.arrow_back,
                                   color: Colors.white,
                                   size: 30,
@@ -92,9 +87,9 @@ class MovieDetailScreen extends StatelessWidget {
                               ),
                               InkWell(
                                 onTap: () {
-                                  Navigator.pop(context);
+                                  // Thêm logic cho chức năng yêu thích
                                 },
-                                child: Icon(
+                                child: const Icon(
                                   Icons.favorite_border_outlined,
                                   color: Colors.white,
                                   size: 30,
@@ -105,19 +100,18 @@ class MovieDetailScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     Padding(
-                      padding: EdgeInsetsGeometry.all(10),
+                      padding: const EdgeInsets.all(10),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             displayMovie.title,
                             style: GoogleFonts.robotoSlab(
-                              textStyle: TextStyle(
+                              textStyle: const TextStyle(
                                 fontSize: 20,
                                 color: Colors.white,
-                                // fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
@@ -131,7 +125,7 @@ class MovieDetailScreen extends StatelessWidget {
                                     fontSize: 14,
                                   ),
                                 ),
-                              SizedBox(width: 12),
+                              const SizedBox(width: 12),
                               if (displayMovie.runtime != null)
                                 Text(
                                   '${displayMovie.runtime} phút',
@@ -142,40 +136,37 @@ class MovieDetailScreen extends StatelessWidget {
                                 ),
                             ],
                           ),
-                          if (displayMovie.genres != null &&
-                              displayMovie.genres!.isNotEmpty)
-                            Text(
-                              'Thể loại: ${displayMovie.genres!.map((g) => g.name).join(', ')}',
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 16,
-                              ),
-                            )
-                          else if (displayMovie.genreIds != null &&
-                              displayMovie.genreIds!.isNotEmpty)
-                            Text(
-                              'Thể loại (ID): ${displayMovie.genreIds!.join(', ')}',
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 16,
-                              ),
+                          if (displayMovie.voteAverage != null)
+                            Row(
+                              children: [
+                                Text(
+                                  'Lượt vote: ${displayMovie.voteAverage}',
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                const Icon(
+                                  Icons.star,
+                                  color: Colors.yellow,
+                                  size: 15,
+                                ),
+                              ],
                             ),
-                          SizedBox(height: 10),
+                          const SizedBox(height: 10),
                           Padding(
-                            padding: EdgeInsetsGeometry.symmetric(
-                              horizontal: 40,
-                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 40),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Container(
-                                  padding: EdgeInsets.all(10),
+                                  padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
-                                    color: Color(0xFF292B37),
+                                    color: const Color(0xFF292B37),
                                     borderRadius: BorderRadius.circular(10),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Color(
+                                        color: const Color(
                                           0xFF292B37,
                                         ).withOpacity(0.5),
                                         blurRadius: 4,
@@ -183,21 +174,20 @@ class MovieDetailScreen extends StatelessWidget {
                                       ),
                                     ],
                                   ),
-                                  child: Icon(
+                                  child: const Icon(
                                     Icons.favorite_border_outlined,
                                     color: Colors.white,
                                     size: 30,
                                   ),
                                 ),
-
                                 Container(
-                                  padding: EdgeInsets.all(10),
+                                  padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
-                                    color: Color(0xFF292B37),
+                                    color: const Color(0xFF292B37),
                                     borderRadius: BorderRadius.circular(10),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Color(
+                                        color: const Color(
                                           0xFF292B37,
                                         ).withOpacity(0.5),
                                         blurRadius: 4,
@@ -205,21 +195,20 @@ class MovieDetailScreen extends StatelessWidget {
                                       ),
                                     ],
                                   ),
-                                  child: Icon(
+                                  child: const Icon(
                                     Icons.download,
                                     color: Colors.white,
                                     size: 30,
                                   ),
                                 ),
-
                                 Container(
-                                  padding: EdgeInsets.all(10),
+                                  padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
-                                    color: Color(0xFF292B37),
+                                    color: const Color(0xFF292B37),
                                     borderRadius: BorderRadius.circular(10),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Color(
+                                        color: const Color(
                                           0xFF292B37,
                                         ).withOpacity(0.5),
                                         blurRadius: 4,
@@ -227,7 +216,7 @@ class MovieDetailScreen extends StatelessWidget {
                                       ),
                                     ],
                                   ),
-                                  child: Icon(
+                                  child: const Icon(
                                     Icons.share,
                                     color: Colors.white,
                                     size: 30,
@@ -252,145 +241,145 @@ class MovieDetailScreen extends StatelessWidget {
                               fontSize: 14,
                             ),
                           ),
+                          if (trailerKey != null) ...[
+                            const SizedBox(height: 10),
+                            const Text(
+                              'Trailer',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              'YouTube Trailer Key: $trailerKey',
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: 10),
                           Padding(
                             padding: const EdgeInsets.all(5),
-                            child: FutureBuilder<List<MovieModel>>(
-                              future: _fetchPopularMovies(),
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return const Center(
-                                    child: CircularProgressIndicator(),
-                                  );
-                                } else if (snapshot.hasError) {
-                                  return Center(
-                                    child: Text(
-                                      'Lỗi: ${snapshot.error}',
-                                      style: const TextStyle(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Text(
+                                      'Phim Thịnh Hành',
+                                      style: TextStyle(
                                         color: Colors.white,
+                                        fontSize: 18,
                                       ),
                                     ),
-                                  );
-                                } else if (snapshot.hasData) {
-                                  final popularMovies = snapshot.data!;
-                                  return Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          const Text(
-                                            'Phim Thịnh Hành',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 18,
-                                            ),
-                                          ),
-                                          const Spacer(),
-                                          IconButton(
-                                            onPressed: () {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      MovieListScreen(
-                                                        title:
-                                                            'Phim Thịnh Hành',
-                                                        endpoint:
-                                                            'movie/popular',
-                                                      ),
+                                    const Spacer(),
+                                    IconButton(
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                MovieListScreen(
+                                                  title: 'Phim Thịnh Hành',
+                                                  endpoint: 'popular',
                                                 ),
-                                              );
-                                            },
-                                            icon: const Icon(
-                                              Icons.navigate_next,
-                                              color: Colors.white,
-                                              size: 30,
-                                            ),
-                                            padding: EdgeInsets.zero,
-                                            constraints: const BoxConstraints(),
                                           ),
-                                        ],
+                                        );
+                                      },
+                                      icon: const Icon(
+                                        Icons.navigate_next,
+                                        color: Colors.white,
+                                        size: 30,
                                       ),
-                                      const SizedBox(height: 10),
-                                      if (popularMovies.isNotEmpty)
-                                        SizedBox(
-                                          height: 235,
-                                          child: ListView.builder(
-                                            scrollDirection: Axis.horizontal,
-                                            itemCount: min(
-                                              7,
-                                              popularMovies.length,
-                                            ),
-                                            itemBuilder: (context, index) {
-                                              final movie =
-                                                  popularMovies[index];
-                                              return Container(
-                                                width: 145,
-                                                margin: const EdgeInsets.only(
-                                                  right: 10,
-                                                ),
-                                                decoration: BoxDecoration(
-                                                  color: const Color(
-                                                    0xFF292B37,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(15),
-                                                ),
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    ClipRRect(
-                                                      borderRadius:
-                                                          const BorderRadius.only(
-                                                            topLeft:
-                                                                Radius.circular(
-                                                                  15,
-                                                                ),
-                                                            topRight:
-                                                                Radius.circular(
-                                                                  15,
-                                                                ),
-                                                          ),
-                                                      child: Image.network(
-                                                        "https://image.tmdb.org/t/p/original/${movie.backdropPath ?? ''}",
-                                                        height: 180,
-                                                        width: 150,
-                                                        fit: BoxFit.cover,
-                                                        errorBuilder:
-                                                            (
-                                                              context,
-                                                              error,
-                                                              stackTrace,
-                                                            ) {
-                                                              return const Center(
-                                                                child: Text(
-                                                                  'Lỗi tải hình ảnh',
-                                                                  style: TextStyle(
-                                                                    color: Colors
-                                                                        .white,
-                                                                  ),
-                                                                ),
-                                                              );
-                                                            },
-                                                      ),
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                if (popularMovies.isNotEmpty)
+                                  SizedBox(
+                                    height: 235,
+                                    child: ListView.builder(
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount: min(7, popularMovies.length),
+                                      itemBuilder: (context, index) {
+                                        final movie = popularMovies[index];
+                                        return GestureDetector(
+                                          onTap: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    MovieDetailScreen(
+                                                      movieId: movie.id,
                                                     ),
-                                                    Padding(
-                                                      padding:
-                                                          const EdgeInsets.symmetric(
-                                                            horizontal: 10,
-                                                            vertical: 5,
-                                                          ),
-                                                      child: Column(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          Center(
+                                              ),
+                                            );
+                                          },
+                                          child: Container(
+                                            width: 145,
+                                            margin: const EdgeInsets.only(
+                                              right: 10,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF292B37),
+                                              borderRadius:
+                                                  BorderRadius.circular(15),
+                                            ),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                ClipRRect(
+                                                  borderRadius:
+                                                      const BorderRadius.only(
+                                                        topLeft:
+                                                            Radius.circular(15),
+                                                        topRight:
+                                                            Radius.circular(15),
+                                                      ),
+                                                  child: Image.network(
+                                                    "https://image.tmdb.org/t/p/w500${movie.backdropPath ?? movie.posterPath ?? ''}",
+                                                    height: 180,
+                                                    width: 150,
+                                                    fit: BoxFit.cover,
+                                                    errorBuilder:
+                                                        (
+                                                          context,
+                                                          error,
+                                                          stackTrace,
+                                                        ) {
+                                                          return const Center(
                                                             child: Text(
-                                                              movie.title,
-                                                              style: const TextStyle(
+                                                              'Lỗi tải hình ảnh',
+                                                              style: TextStyle(
+                                                                color: Colors
+                                                                    .white,
+                                                              ),
+                                                            ),
+                                                          );
+                                                        },
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 10,
+                                                        vertical: 5,
+                                                      ),
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Center(
+                                                        child: Text(
+                                                          movie.title,
+                                                          style:
+                                                              const TextStyle(
                                                                 color: Colors
                                                                     .white,
                                                                 fontSize: 13,
@@ -398,38 +387,38 @@ class MovieDetailScreen extends StatelessWidget {
                                                                     FontWeight
                                                                         .bold,
                                                               ),
-                                                              overflow:
-                                                                  TextOverflow
-                                                                      .ellipsis,
-                                                              maxLines: 1,
-                                                            ),
-                                                          ),
-                                                          Center(
-                                                            child: Text(
-                                                              'Rating: ${movie.voteAverage.toStringAsFixed(1)}',
-                                                              style:
-                                                                  const TextStyle(
-                                                                    color: Colors
-                                                                        .white70,
-                                                                    fontSize:
-                                                                        12,
-                                                                  ),
-                                                            ),
-                                                          ),
-                                                        ],
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          maxLines: 1,
+                                                        ),
                                                       ),
-                                                    ),
-                                                  ],
+                                                      Center(
+                                                        child: Text(
+                                                          'Rating: ${movie.voteAverage.toStringAsFixed(1)}',
+                                                          style:
+                                                              const TextStyle(
+                                                                color: Colors
+                                                                    .white70,
+                                                                fontSize: 12,
+                                                              ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ),
-                                              );
-                                            },
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                    ],
-                                  );
-                                }
-                                return const SizedBox.shrink();
-                              },
+                                        );
+                                      },
+                                    ),
+                                  )
+                                else
+                                  const Text(
+                                    'Không có phim thịnh hành',
+                                    style: TextStyle(color: Colors.white70),
+                                  ),
+                              ],
                             ),
                           ),
                         ],
@@ -439,7 +428,7 @@ class MovieDetailScreen extends StatelessWidget {
                 ),
               );
             }
-            return Center(
+            return const Center(
               child: Text(
                 'Không có dữ liệu',
                 style: TextStyle(color: Colors.white),

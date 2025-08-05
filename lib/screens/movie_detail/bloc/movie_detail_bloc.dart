@@ -1,14 +1,31 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:movie_app/api/constant.dart';
 import 'package:movie_app/model/movie_model.dart';
 import 'package:movie_app/screens/movie_detail/bloc/movie_detail_event.dart';
 import 'package:movie_app/screens/movie_detail/bloc/movie_detail_state.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:movie_app/services/firestore_service.dart';
+
 class MovieDetailBloc extends Bloc<MovieDetailEvent, MovieDetailState> {
-  MovieDetailBloc() : super(MovieDetailLoading()) {
+  final FirestoreService firestoreService;
+
+  MovieDetailBloc({required this.firestoreService})
+    : super(MovieDetailLoading()) {
     on<LoadMovieDetailEvent>(_onLoadMovieDetail);
+  }
+
+  Future<List<MovieModel>> _fetchPopularMovies() async {
+    try {
+      final movies = await firestoreService.getMoviesByCategory('popular');
+      if (movies.isEmpty) {
+        throw Exception('Không tìm thấy phim thịnh hành trong Firestore');
+      }
+      return movies;
+    } catch (e) {
+      throw Exception('Lỗi khi tải phim thịnh hành: $e');
+    }
   }
 
   Future<void> _onLoadMovieDetail(
@@ -17,25 +34,25 @@ class MovieDetailBloc extends Bloc<MovieDetailEvent, MovieDetailState> {
   ) async {
     emit(MovieDetailLoading());
     try {
-      final movieResponse = await http.get(
-        Uri.parse(
-          'https://api.themoviedb.org/3/movie/${event.movieId}?api_key=$apiKey&language=vi-VN',
-        ),
-      );
-      print(
-        'API RESPONSE: ${movieResponse.statusCode} - ${movieResponse.body}',
-      );
-      if (movieResponse.statusCode != 200) {
-        emit(const MovieDetailError('Lỗi khi tải chi tiết phim'));
+      final doc = await FirebaseFirestore.instance
+          .collection("movies")
+          .doc(event.movieId)
+          .get();
+      if (!doc.exists) {
+        emit(const MovieDetailError('Không tìm thấy phim trong Firestore'));
         return;
       }
-      final movieData = json.decode(movieResponse.body);
-      final movie = MovieModel.fromMap(movieData);
+      // Lấy danh sách phim liên quan
+      final relatedMovies = await _fetchPopularMovies();
 
+      final movie = MovieModel.fromMap(doc.data()!);
+      final tmdbId = movie.id; //ID TMDB
+
+      //Goi api de lay trailer
       String? trailerKey;
       final videoResponse = await http.get(
         Uri.parse(
-          'https://api.themoviedb.org/3/movie/${event.movieId}/videos?api_key=$apiKey',
+          'https://api.themoviedb.org/3/movie/$tmdbId/videos?api_key=d595cdbd770bb65807690dc099be347a',
         ),
       );
       print(
@@ -57,7 +74,13 @@ class MovieDetailBloc extends Bloc<MovieDetailEvent, MovieDetailState> {
       } else {
         print('Failed to load videos: ${videoResponse.statusCode}');
       }
-      emit(MovieDetailLoaded(movie, trailerKey));
+      emit(
+        MovieDetailLoaded(
+          movie: movie,
+          youtubeKey: trailerKey,
+          relatedMovies: relatedMovies,
+        ),
+      );
       print('State emitted: MovieDetailLoaded');
     } catch (e) {
       emit(MovieDetailError('Lỗi: $e'));

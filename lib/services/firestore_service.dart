@@ -18,12 +18,15 @@ class FirestoreService {
   Future<List<MovieModel>> getMovies() async {
     try {
       final snapshot = await _db.collection(_category).get();
-      return snapshot.docs
-          .map((doc) => MovieModel.fromMap(doc.data()))
-          .toList();
+      final movies = snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return MovieModel.fromMap(data);
+      }).toList();
+      return movies;
     } catch (e) {
       print("Error fetching movies: $e");
-      return [];
+      throw Exception('Failed to fetch movies: $e');
     }
   }
 
@@ -35,12 +38,16 @@ class FirestoreService {
           .where('category', isEqualTo: category)
           .orderBy('voteAverage', descending: true)
           .get();
-      return snapshot.docs
-          .map((doc) => MovieModel.fromMap(doc.data()))
-          .toList();
+      final movies = snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id; // Gắn ID Firestore
+        return MovieModel.fromMap(data);
+      }).toList();
+      print('Fetched ${movies.length} movies for endpoint: $category');
+      return movies;
     } catch (e) {
-      print("Error fetching movies by category: $e");
-      return [];
+      print('Error fetching movies for endpoint $category: $e');
+      throw Exception('Failed to fetch movies for endpoint $category: $e');
     }
   }
 

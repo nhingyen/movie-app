@@ -8,9 +8,14 @@ class MovieDetailLoading extends MovieDetailState {}
 
 class MovieDetailLoaded extends MovieDetailState {
   final MovieModel movie;
-  final String? trailerKey;
+  final String? youtubeKey;
+  final List<MovieModel> relatedMovies;
 
-  const MovieDetailLoaded(this.movie, this.trailerKey);
+  const MovieDetailLoaded({
+    required this.movie,
+    this.youtubeKey,
+    required this.relatedMovies,
+  });
 }
 
 class MovieDetailError extends MovieDetailState {

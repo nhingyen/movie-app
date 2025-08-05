@@ -70,7 +70,7 @@ class _CustomFooterState extends State<CustomFooter> {
             isSelected: _selectedIndex == 1,
           ),
           FooterItem(
-            icon: Icons.home_outlined,
+            icon: Icons.favorite_border_outlined,
             label: 'Yêu thích',
             onTap: () => _onItemTapped(2),
             isSelected: _selectedIndex == 2,

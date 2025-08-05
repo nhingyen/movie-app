@@ -4,6 +4,8 @@ abstract class MovieListState {
   const MovieListState();
 }
 
+class MovieListInitial extends MovieListState {}
+
 class MovieListLoading extends MovieListState {}
 
 class MovieListLoaded extends MovieListState {

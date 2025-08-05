@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:movie_app/model/movie_model.dart';
+import 'package:movie_app/screens/movie_detail/movie_detail_screen.dart';
 
 class HomeCarousel extends StatefulWidget {
   final List<MovieModel> movies;
@@ -103,36 +104,50 @@ class _HomeCarouselState extends State<HomeCarousel> {
                   child: Column(
                     children: [
                       Expanded(
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 8),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(15),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.3),
-                                blurRadius: 10,
-                                offset: Offset(0, 5),
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    MovieDetailScreen(movieId: movie.id),
                               ),
-                            ],
-                          ),
+                            );
+                          },
                           child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 8),
                             decoration: BoxDecoration(
-                              border: Border.all(color: Colors.white, width: 1),
                               borderRadius: BorderRadius.circular(15),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.3),
+                                  blurRadius: 10,
+                                  offset: Offset(0, 5),
+                                ),
+                              ],
                             ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(15),
-                              child: Image.network(
-                                "https://image.tmdb.org/t/p/w500${movie.backdropPath ?? ''}",
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return const Center(
-                                    child: Text(
-                                      'Lỗi tải ảnh',
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                  );
-                                },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 1,
+                                ),
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(15),
+                                child: Image.network(
+                                  "https://image.tmdb.org/t/p/w500${movie.backdropPath ?? ''}",
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Center(
+                                      child: Text(
+                                        'Lỗi tải ảnh',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    );
+                                  },
+                                ),
                               ),
                             ),
                           ),
