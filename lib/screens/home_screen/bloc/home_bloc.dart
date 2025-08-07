@@ -1,6 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:movie_app/api/api.dart';
-import 'package:movie_app/model/movie_model.dart';
 import 'package:movie_app/screens/home_screen/bloc/home_event.dart';
 import 'package:movie_app/screens/home_screen/bloc/home_state.dart';
 import 'package:movie_app/services/firestore_service.dart';

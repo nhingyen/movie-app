@@ -1,24 +1,53 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:hive/hive.dart';
 
+part 'movie_model.g.dart';
+
+@HiveType(typeId: 0)
 class MovieModel {
-  final String title;
-  final String posterPath;
+  @HiveField(0)
   final String id;
+
+  @HiveField(1)
+  final String title;
+
+  @HiveField(2)
+  final String posterPath;
+
+  @HiveField(3)
   final String backdropPath;
+
+  @HiveField(4)
   final double voteAverage;
+
+  @HiveField(5)
   final String releaseDate;
+
+  @HiveField(6)
   final String overview;
+
+  @HiveField(7)
   final List<int>? genreIds;
+
+  @HiveField(8)
   final List<Genre>? genres;
+
+  @HiveField(9)
   final int? runtime;
+
+  @HiveField(10)
   final bool? video;
+
+  @HiveField(11)
   final String? category;
+
+  @HiveField(12)
   final DateTime? timestamp;
 
   MovieModel({
+    required this.id,
     required this.title,
     required this.posterPath,
-    required this.id,
     required this.backdropPath,
     required this.voteAverage,
     required this.releaseDate,
@@ -33,32 +62,31 @@ class MovieModel {
 
   factory MovieModel.fromMap(Map<String, dynamic> map) {
     return MovieModel(
-      title: map['title'] ?? '',
-      posterPath:
-          map['posterPath'] ?? map['poster'] ?? '', // Hỗ trợ cả 2 tên field
       id: map['id'].toString(),
+      title: map['title'] ?? '',
+      posterPath: map['posterPath'] ?? map['poster'] ?? '',
       backdropPath: map['backdropPath'] ?? map['backdrop'] ?? '',
       voteAverage: (map['voteAverage'] as num?)?.toDouble() ?? 0.0,
       releaseDate: map['releaseDate'] ?? '',
-      overview: map['overview'],
-      runtime: map['runtime'],
-      video: map['video'],
-      category: map['category'],
+      overview: map['overview'] ?? '',
+      runtime: map['runtime'] as int?,
+      video: map['video'] as bool?,
+      category: map['category'] as String?,
       timestamp: (map['timestamp'] as Timestamp?)?.toDate(),
       genreIds:
           (map['genreIds'] as List<dynamic>?)?.cast<int>() ??
-          (map['genre_ids'] as List<dynamic>?)?.cast<int>(), // Lấy genre_ids
+          (map['genre_ids'] as List<dynamic>?)?.cast<int>(),
       genres: (map['genres'] as List<dynamic>?)
           ?.map((genre) => Genre.fromMap(genre))
-          .toList(), // Lấy genres nếu có (từ /movie/{movie_id})
+          .toList(),
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
+      'id': id,
       'title': title,
       'poster': posterPath,
-      'id': id,
       'backdrop': backdropPath,
       'voteAverage': voteAverage,
       'releaseDate': releaseDate,
@@ -68,15 +96,32 @@ class MovieModel {
       'runtime': runtime,
       'video': video,
       'category': category,
-      'timestamp': FieldValue.serverTimestamp(), // Firestore timestamp
+      'timestamp': FieldValue.serverTimestamp(), // Sử dụng cho Firestore
     };
   }
 
-  // Thêm copyWith method để dễ dàng tạo bản sao
+  // Constructor để sao chép và thêm timestamp
+  MovieModel.copyWithTimestamp(MovieModel original, {DateTime? timestamp})
+    : this(
+        id: original.id,
+        title: original.title,
+        posterPath: original.posterPath,
+        backdropPath: original.backdropPath,
+        voteAverage: original.voteAverage,
+        releaseDate: original.releaseDate,
+        overview: original.overview,
+        genreIds: original.genreIds,
+        genres: original.genres,
+        runtime: original.runtime,
+        video: original.video,
+        category: original.category,
+        timestamp: timestamp ?? DateTime.now(),
+      );
+  // Phương thức copyWith để cập nhật các trường
   MovieModel copyWith({
+    String? id,
     String? title,
     String? posterPath,
-    String? id,
     String? backdropPath,
     double? voteAverage,
     String? releaseDate,
@@ -89,9 +134,9 @@ class MovieModel {
     DateTime? timestamp,
   }) {
     return MovieModel(
+      id: id ?? this.id,
       title: title ?? this.title,
       posterPath: posterPath ?? this.posterPath,
-      id: id ?? this.id,
       backdropPath: backdropPath ?? this.backdropPath,
       voteAverage: voteAverage ?? this.voteAverage,
       releaseDate: releaseDate ?? this.releaseDate,
@@ -107,7 +152,7 @@ class MovieModel {
 
   @override
   String toString() {
-    return 'MovieModel(id: $id, title: $title, category: $category)';
+    return 'MovieModel(id: $id, title: $title, category: $category, timestamp: $timestamp)';
   }
 }
 

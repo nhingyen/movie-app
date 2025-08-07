@@ -487,84 +487,98 @@ class HomeScreenContent extends StatelessWidget {
                                 itemCount: min(7, nowPlayingMovies.length),
                                 itemBuilder: (context, index) {
                                   final movie = nowPlayingMovies[index];
-                                  return Container(
-                                    width: 145,
-                                    margin: const EdgeInsets.only(right: 10),
-                                    decoration: BoxDecoration(
-                                      color: Color(0xFF292B37),
-                                      borderRadius: BorderRadius.circular(15),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        ClipRRect(
-                                          borderRadius: BorderRadius.only(
-                                            topLeft: Radius.circular(15),
-                                            topRight: Radius.circular(15),
-                                          ),
-                                          child: Image.network(
-                                            "https://image.tmdb.org/t/p/w500${movie.backdropPath ?? ''}",
-                                            height: 180,
-                                            width: 150,
-                                            fit: BoxFit.cover,
-                                            errorBuilder:
-                                                (context, error, stackTrace) {
-                                                  return const Center(
-                                                    child: Text(
-                                                      'Lỗi tải hình ảnh',
-                                                      style: TextStyle(
-                                                        color: Colors.white,
-                                                      ),
-                                                    ),
-                                                  );
-                                                },
-                                          ),
+                                  return GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              MovieDetailScreen(
+                                                movieId: movie.id,
+                                              ),
                                         ),
-                                        Padding(
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: 10,
-                                            vertical: 5,
+                                      );
+                                    },
+                                    child: Container(
+                                      width: 145,
+                                      margin: const EdgeInsets.only(right: 10),
+                                      decoration: BoxDecoration(
+                                        color: Color(0xFF292B37),
+                                        borderRadius: BorderRadius.circular(15),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          ClipRRect(
+                                            borderRadius: BorderRadius.only(
+                                              topLeft: Radius.circular(15),
+                                              topRight: Radius.circular(15),
+                                            ),
+                                            child: Image.network(
+                                              "https://image.tmdb.org/t/p/w500${movie.backdropPath ?? ''}",
+                                              height: 180,
+                                              width: 150,
+                                              fit: BoxFit.cover,
+                                              errorBuilder:
+                                                  (context, error, stackTrace) {
+                                                    return const Center(
+                                                      child: Text(
+                                                        'Lỗi tải hình ảnh',
+                                                        style: TextStyle(
+                                                          color: Colors.white,
+                                                        ),
+                                                      ),
+                                                    );
+                                                  },
+                                            ),
                                           ),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            children: [
-                                              Center(
-                                                child: Text(
-                                                  movie.title,
-                                                  style: const TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 13,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  maxLines: 1,
-                                                ),
-                                              ),
-                                              Center(
-                                                child: Text(
-                                                  'Rating: ${movie.voteAverage.toStringAsFixed(1)}',
-                                                  style: const TextStyle(
-                                                    color: Colors.white70,
-                                                    fontSize: 12,
+                                          Padding(
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 5,
+                                            ),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: [
+                                                Center(
+                                                  child: Text(
+                                                    movie.title,
+                                                    style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 13,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    maxLines: 1,
                                                   ),
                                                 ),
-                                              ),
-                                              // SizedBox(height: 5),
-                                              // Text(
-                                              //   'Release: ${movie.releaseDate}',
-                                              //   style: const TextStyle(
-                                              //     color: Colors.white70,
-                                              //     fontSize: 14,
-                                              //   ),
-                                              // ),
-                                              // SizedBox(height: 5),
-                                            ],
-                                          ),
-                                        ), // Thêm padding để tránh lỗi
-                                      ],
+                                                Center(
+                                                  child: Text(
+                                                    'Rating: ${movie.voteAverage.toStringAsFixed(1)}',
+                                                    style: const TextStyle(
+                                                      color: Colors.white70,
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                ),
+                                                // SizedBox(height: 5),
+                                                // Text(
+                                                //   'Release: ${movie.releaseDate}',
+                                                //   style: const TextStyle(
+                                                //     color: Colors.white70,
+                                                //     fontSize: 14,
+                                                //   ),
+                                                // ),
+                                                // SizedBox(height: 5),
+                                              ],
+                                            ),
+                                          ), // Thêm padding để tránh lỗi
+                                        ],
+                                      ),
                                     ),
                                   );
                                 },
