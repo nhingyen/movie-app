@@ -215,7 +215,9 @@ class HomeScreenContent extends StatelessWidget {
                                           right: 10,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: Color(0xFF292B37),
+                                          color: Color(
+                                            0xFF292B37,
+                                          ).withOpacity(0.5),
                                           borderRadius: BorderRadius.circular(
                                             15,
                                           ),
@@ -362,7 +364,9 @@ class HomeScreenContent extends StatelessWidget {
                                       width: 145,
                                       margin: const EdgeInsets.only(right: 10),
                                       decoration: BoxDecoration(
-                                        color: Color(0xFF292B37),
+                                        color: Color(
+                                          0xFF292B37,
+                                        ).withOpacity(0.5),
                                         borderRadius: BorderRadius.circular(15),
                                       ),
                                       child: Column(
@@ -503,7 +507,9 @@ class HomeScreenContent extends StatelessWidget {
                                       width: 145,
                                       margin: const EdgeInsets.only(right: 10),
                                       decoration: BoxDecoration(
-                                        color: Color(0xFF292B37),
+                                        color: Color(
+                                          0xFF292B37,
+                                        ).withOpacity(0.5),
                                         borderRadius: BorderRadius.circular(15),
                                       ),
                                       child: Column(
