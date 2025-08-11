@@ -39,7 +39,7 @@ class MovieDetailBloc extends Bloc<MovieDetailEvent, MovieDetailState> {
           .doc(event.movieId)
           .get();
       if (!doc.exists) {
-        emit(const MovieDetailError('Không tìm thấy phim trong Firestore'));
+        emit(MovieDetailError('Không tìm thấy phim trong Firestore'));
         return;
       }
       // Lấy danh sách phim liên quan
@@ -66,8 +66,14 @@ class MovieDetailBloc extends Bloc<MovieDetailEvent, MovieDetailState> {
             (video) => video['type'] == 'Trailer' && video['site'] == 'YouTube',
             orElse: () => null,
           );
-          trailerKey = trailer?['key'];
-          print('Trailer key: $trailerKey');
+          trailerKey = trailer != null ? trailer['key']?.toString() : null;
+          print('Trailer key: $trailerKey, Type: ${trailerKey.runtimeType}');
+          // Kiểm tra định dạng YouTube video ID
+          if (trailerKey != null &&
+              !RegExp(r'^[a-zA-Z0-9_-]{11}$').hasMatch(trailerKey)) {
+            print('Invalid YouTube video ID: $trailerKey');
+            trailerKey = null;
+          }
         } else {
           print('No videos found for movie ID: ${event.movieId}');
         }
@@ -77,7 +83,7 @@ class MovieDetailBloc extends Bloc<MovieDetailEvent, MovieDetailState> {
       emit(
         MovieDetailLoaded(
           movie: movie,
-          youtubeKey: trailerKey,
+          trailerKey: trailerKey,
           relatedMovies: relatedMovies,
         ),
       );

@@ -1,15 +1,14 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:movie_app/model/movie_model.dart';
-import 'package:movie_app/screens/list_movie/movie_list_screen.dart';
 import 'package:movie_app/screens/movie_detail/bloc/movie_detail_bloc.dart';
 import 'package:movie_app/screens/movie_detail/bloc/movie_detail_event.dart';
 import 'package:movie_app/screens/movie_detail/bloc/movie_detail_state.dart';
 import 'package:movie_app/services/firestore_service.dart';
 import 'package:movie_app/services/hive_setup.dart';
+import 'package:movie_app/screens/list_movie/movie_list_screen.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class MovieDetailScreen extends StatefulWidget {
   final String movieId;
@@ -29,47 +28,36 @@ class MovieDetailScreen extends StatefulWidget {
 class _MovieDetailScreenState extends State<MovieDetailScreen> {
   final Box<MovieModel> favoriteBox = HiveSetup.getFavoritesBox();
   bool _isFavorite = false;
-  MovieModel? currentMovie;
+  WebViewController? _webViewController;
 
   @override
   void initState() {
     super.initState();
     _checkFavoriteStatus();
-    // Nếu có initialMovie, sử dụng nó để khởi tạo
-    if (widget.initialMovie != null) {
-      currentMovie = widget.initialMovie;
-      _isFavorite = favoriteBox.containsKey(widget.movieId);
-    }
   }
 
   void _checkFavoriteStatus() {
-    final movie = favoriteBox.get(widget.movieId);
     setState(() {
-      _isFavorite = movie != null;
-      currentMovie =
-          movie ?? currentMovie; // Giữ currentMovie nếu đã có từ initialMovie
+      _isFavorite = favoriteBox.containsKey(widget.movieId);
     });
   }
 
   void toggleFavorite(MovieModel item) {
     final alreadyFavorite = favoriteBox.containsKey(item.id);
-
     if (alreadyFavorite) {
       favoriteBox.delete(item.id);
-      _checkFavoriteStatus(); // Cập nhật lại trạng thái từ Hive
+      _checkFavoriteStatus();
       print('Removed $item from favorites');
     } else {
       final movieWithTimestamp = MovieModel.copyWithTimestamp(item);
-      print(
-        'Added $movieWithTimestamp with timestamp: ${movieWithTimestamp.timestamp}',
-      );
       favoriteBox.put(item.id, movieWithTimestamp);
       setState(() {
         _isFavorite = true;
-        currentMovie = movieWithTimestamp;
       });
+      print(
+        'Added $movieWithTimestamp with timestamp: ${movieWithTimestamp.timestamp}',
+      );
     }
-
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -77,6 +65,12 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    // Không cần dispose WebViewController
+    super.dispose();
   }
 
   @override
@@ -96,9 +90,6 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
             if (state is MovieDetailLoading) {
               return const Center(child: CircularProgressIndicator());
             } else if (state is MovieDetailError) {
-              if (currentMovie != null) {
-                return _buildMovieDetail(currentMovie!, null, <MovieModel>[]);
-              }
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -120,14 +111,11 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                 ),
               );
             } else if (state is MovieDetailLoaded) {
-              final displayMovie = state.movie;
-              final trailerKey = state.youtubeKey;
-              final popularMovies = state.relatedMovies;
-              if (currentMovie == null || currentMovie!.id != displayMovie.id) {
-                _isFavorite = favoriteBox.containsKey(displayMovie.id);
-                currentMovie = displayMovie;
-              }
-              return _buildMovieDetail(displayMovie, trailerKey, popularMovies);
+              return _buildMovieDetail(
+                state.movie,
+                state.trailerKey,
+                state.relatedMovies,
+              );
             }
             return const Center(
               child: Text(
@@ -146,55 +134,80 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
     String? trailerKey,
     List<MovieModel> popularMovies,
   ) {
+    // Khởi tạo WebViewController khi có trailerKey
+    if (trailerKey != null && _webViewController == null) {
+      try {
+        _webViewController = WebViewController()
+          ..setJavaScriptMode(JavaScriptMode.unrestricted)
+          ..setBackgroundColor(const Color(0x00000000))
+          ..loadRequest(
+            Uri.parse(
+              'https://www.youtube.com/embed/$trailerKey?autoplay=0&mute=1',
+            ),
+          );
+      } catch (e) {
+        print('Error initializing WebViewController: $e');
+        _webViewController = null; // Đặt null nếu lỗi để fallback về hình ảnh
+      }
+    }
+
     return SingleChildScrollView(
+      key:
+          UniqueKey(), // Đảm bảo mỗi lần render tạo mới widget, tránh lặp nội dung
+      physics: const ClampingScrollPhysics(), // Kiểm soát cuộn mượt mà
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Stack(
-            children: [
-              Image.network(
-                'https://image.tmdb.org/t/p/w500/${movie.posterPath ?? movie.backdropPath ?? ''}',
-                height: 350,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => const Center(
-                  child: Text(
-                    'Lỗi tải hình ảnh',
-                    style: TextStyle(color: Colors.white),
+          // Phần header (hình ảnh hoặc trailer)
+          SizedBox(
+            height: 270, // Chiều cao cố định
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                if (trailerKey != null && _webViewController != null)
+                  WebViewWidget(controller: _webViewController!)
+                else
+                  Image.network(
+                    'https://image.tmdb.org/t/p/w500/${movie.posterPath ?? movie.backdropPath ?? ''}',
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => const Center(
+                      child: Text(
+                        'Lỗi tải hình ảnh',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                Positioned(
+                  top: 20,
+                  left: 1,
+                  right: 15,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      InkWell(
+                        onTap: () => Navigator.pop(context),
+                        child: const Icon(
+                          Icons.arrow_back,
+                          color: Colors.white,
+                          size: 30,
+                        ),
+                      ),
+                      // InkWell(
+                      //   onTap: () => toggleFavorite(movie),
+                      //   child: Icon(
+                      //     _isFavorite
+                      //         ? Icons.favorite
+                      //         : Icons.favorite_border_outlined,
+                      //     color: Colors.white,
+                      //     size: 30,
+                      //   ),
+                      // ),
+                    ],
                   ),
                 ),
-              ),
-              Positioned(
-                top: 25,
-                left: 15,
-                right: 15,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    InkWell(
-                      onTap: () => Navigator.pop(context),
-                      child: const Icon(
-                        Icons.arrow_back,
-                        color: Colors.white,
-                        size: 30,
-                      ),
-                    ),
-                    InkWell(
-                      onTap: () => toggleFavorite(movie),
-                      child: Icon(
-                        _isFavorite
-                            ? Icons.favorite
-                            : Icons.favorite_border_outlined,
-                        color: Colors.white,
-                        size: 30,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-          const SizedBox(height: 10),
           Padding(
             padding: const EdgeInsets.all(10),
             child: Column(
@@ -202,13 +215,9 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
               children: [
                 Text(
                   movie.title,
-                  style: GoogleFonts.robotoSlab(
-                    textStyle: const TextStyle(
-                      fontSize: 20,
-                      color: Colors.white,
-                    ),
-                  ),
+                  style: const TextStyle(fontSize: 20, color: Colors.white),
                 ),
+                const SizedBox(height: 3),
                 Row(
                   children: [
                     if (movie.releaseDate != null)
@@ -323,26 +332,13 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+                const SizedBox(height: 5),
                 Text(
                   movie.overview ?? 'Không có mô tả',
                   style: const TextStyle(color: Colors.white70, fontSize: 14),
                 ),
-                if (trailerKey != null) ...[
-                  const SizedBox(height: 10),
-                  const Text(
-                    'Trailer',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    'YouTube Trailer Key: $trailerKey',
-                    style: const TextStyle(color: Colors.white70, fontSize: 14),
-                  ),
-                ],
-                const SizedBox(height: 10),
+                const SizedBox(height: 5),
+                // Phần Phim Thịnh Hành
                 Padding(
                   padding: const EdgeInsets.all(5),
                   child: Column(
@@ -380,19 +376,24 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                       const SizedBox(height: 10),
                       if (popularMovies.isNotEmpty)
                         SizedBox(
-                          height: 235,
+                          height: 235, // Chiều cao cố định để tránh lỗi cuộn
                           child: ListView.builder(
                             scrollDirection: Axis.horizontal,
-                            itemCount: min(7, popularMovies.length),
+                            physics:
+                                const NeverScrollableScrollPhysics(), // Ngăn cuộn bên trong
+                            itemCount: popularMovies.length > 7
+                                ? 7
+                                : popularMovies.length,
                             itemBuilder: (context, index) {
-                              final movie = popularMovies[index];
+                              final movieItem = popularMovies[index];
                               return GestureDetector(
                                 onTap: () {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) =>
-                                          MovieDetailScreen(movieId: movie.id),
+                                      builder: (context) => MovieDetailScreen(
+                                        movieId: movieItem.id,
+                                      ),
                                     ),
                                   );
                                 },
@@ -413,7 +414,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                                           topRight: Radius.circular(15),
                                         ),
                                         child: Image.network(
-                                          "https://image.tmdb.org/t/p/w500${movie.backdropPath ?? movie.posterPath ?? ''}",
+                                          "https://image.tmdb.org/t/p/w500${movieItem.backdropPath ?? movieItem.posterPath ?? ''}",
                                           height: 180,
                                           width: 150,
                                           fit: BoxFit.cover,
@@ -441,7 +442,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                                           children: [
                                             Center(
                                               child: Text(
-                                                movie.title,
+                                                movieItem.title,
                                                 style: const TextStyle(
                                                   color: Colors.white,
                                                   fontSize: 13,
@@ -453,7 +454,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                                             ),
                                             Center(
                                               child: Text(
-                                                'Rating: ${movie.voteAverage.toStringAsFixed(1)}',
+                                                'Rating: ${movieItem.voteAverage.toStringAsFixed(1)}',
                                                 style: const TextStyle(
                                                   color: Colors.white70,
                                                   fontSize: 12,
