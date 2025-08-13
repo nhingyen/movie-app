@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:movie_app/screens/favorite/favorite_screen.dart';
 import 'package:movie_app/screens/home_screen/home_screen.dart';
+import 'package:movie_app/screens/search/search_screen.dart';
 import 'package:movie_app/widgets/footer/footer_item.dart';
 
 class CustomFooter extends StatefulWidget {
@@ -35,7 +36,7 @@ class _CustomFooterState extends State<CustomFooter> {
       case 1:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => HomeScreen()),
+          MaterialPageRoute(builder: (context) => SearchMovieScreen()),
         );
         break;
       case 2:

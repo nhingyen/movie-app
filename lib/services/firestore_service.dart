@@ -8,7 +8,14 @@ class FirestoreService {
   //them 1 movie
   Future<void> addMovie(MovieModel movie) async {
     try {
-      await _db.collection(_category).doc(movie.id).set(movie.toMap());
+      final movieData = movie.toMap();
+      // Tạo searchKeywords từ tiêu đề phim
+      movieData['searchKeywords'] = movie.title
+          ?.toLowerCase()
+          .split(' ')
+          .where((word) => word.isNotEmpty)
+          .toList();
+      await _db.collection(_category).doc(movie.id).set(movieData);
     } catch (e) {
       print('Error adding movie: $e');
     }
@@ -107,5 +114,32 @@ class FirestoreService {
       print('Error getting movie by ID: $e');
     }
     return null;
+  }
+
+  Stream<List<MovieModel>> searchMovies(String keyword) {
+    final lowerKeyword = keyword.toLowerCase();
+
+    return _db
+        .collection(_category)
+        // .where('titleLower', isGreaterThanOrEqualTo: lowerKeyword)
+        // .where('titleLower', isLessThanOrEqualTo: lowerKeyword + '\uf8ff')
+        .where('searchKeywords', arrayContains: lowerKeyword)
+        .snapshots()
+        .map((snapshot) {
+          final seeIds = <String>{};
+          final movies = <MovieModel>[];
+
+          for (var doc in snapshot.docs) {
+            final data = doc.data();
+            // Gắn ID Firestore vào dữ liệu
+            data['id'] = doc.id;
+            final movie = MovieModel.fromMap(doc.data());
+            if (!seeIds.contains(movie.id)) {
+              movies.add(movie);
+              seeIds.add(movie.id!);
+            }
+          }
+          return movies;
+        });
   }
 }
