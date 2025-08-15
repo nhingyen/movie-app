@@ -82,3 +82,7 @@ GoogleService-Info.plist
 
 windows/
 
+scripts/push_to_firestore/serviceAccountKey.json
+node_modules/
+
+
