@@ -271,15 +271,21 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                             ),
                           ],
                         ),
-                        child: InkWell(
-                          onTap: () => toggleFavorite(movie),
-                          child: Icon(
-                            _isFavorite
-                                ? Icons.favorite
-                                : Icons.favorite_border_outlined,
-                            color: Colors.white,
-                            size: 30,
-                          ),
+                        child: ValueListenableBuilder(
+                          valueListenable: favoriteBox.listenable(),
+                          builder: (context, Box<MovieModel> box, _) {
+                            final isFavorite = box.containsKey(movie.id);
+                            return InkWell(
+                              onTap: () => toggleFavorite(movie),
+                              child: Icon(
+                                isFavorite
+                                    ? Icons.favorite
+                                    : Icons.favorite_border_outlined,
+                                color: Colors.white,
+                                size: 30,
+                              ),
+                            );
+                          },
                         ),
                       ),
                       Container(
