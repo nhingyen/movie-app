@@ -9,6 +9,7 @@ import 'package:movie_app/services/firestore_service.dart';
 import 'package:movie_app/services/hive_setup.dart';
 import 'package:movie_app/screens/list_movie/movie_list_screen.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:share_plus/share_plus.dart';
 
 class MovieDetailScreen extends StatefulWidget {
   final String movieId;
@@ -324,10 +325,30 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                             ),
                           ],
                         ),
-                        child: const Icon(
-                          Icons.share,
-                          color: Colors.white,
-                          size: 30,
+                        child: InkWell(
+                          onTap: () {
+                            if (trailerKey != null) {
+                              final youtubeUrl =
+                                  "https://www.youtube.com/watch?v=$trailerKey";
+                              Share.share(
+                                youtubeUrl,
+                                subject: "Xem trailer phim ${movie.title}",
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    "Phim này chưa có trailer để chia sẻ",
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                          child: const Icon(
+                            Icons.share,
+                            color: Colors.white,
+                            size: 30,
+                          ),
                         ),
                       ),
                     ],
