@@ -499,6 +499,7 @@ class HomeScreenContent extends StatelessWidget {
                                           builder: (context) =>
                                               MovieDetailScreen(
                                                 movieId: movie.id,
+                                                initialMovie: movie,
                                               ),
                                         ),
                                       );

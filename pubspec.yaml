@@ -42,6 +42,7 @@ dependencies:
   hive_flutter: ^1.1.0
   equatable: ^2.0.7
   webview_flutter: ^4.13.0
+  dio: ^5.9.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

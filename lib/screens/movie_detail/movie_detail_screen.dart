@@ -79,8 +79,12 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
       providers: [
         BlocProvider(
           create: (context) =>
-              MovieDetailBloc(firestoreService: FirestoreService())
-                ..add(LoadMovieDetailEvent(widget.movieId)),
+              MovieDetailBloc(firestoreService: FirestoreService())..add(
+                LoadMovieDetailEvent(
+                  widget.movieId,
+                  initialMovie: widget.initialMovie,
+                ),
+              ),
         ),
       ],
       child: Scaffold(

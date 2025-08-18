@@ -34,6 +34,23 @@ class MovieDetailBloc extends Bloc<MovieDetailEvent, MovieDetailState> {
   ) async {
     emit(MovieDetailLoading());
     try {
+      if (event.initialMovie != null) {
+        // 👉 Dùng luôn movie đã truyền vào (Favorite/Search)
+        final movie = event.initialMovie!;
+        // Lấy danh sách phim liên quan
+        final relatedMovies = await _fetchPopularMovies();
+
+        emit(
+          MovieDetailLoaded(
+            movie: movie,
+            trailerKey: null, // Nếu cần có trailer thì fetch thêm ở đây
+            relatedMovies: relatedMovies,
+          ),
+        );
+        return;
+      }
+
+      // 👉 Trường hợp không có initialMovie thì fetch từ Firestore
       final doc = await FirebaseFirestore.instance
           .collection("movies")
           .doc(event.movieId)
@@ -42,22 +59,20 @@ class MovieDetailBloc extends Bloc<MovieDetailEvent, MovieDetailState> {
         emit(MovieDetailError('Không tìm thấy phim trong Firestore'));
         return;
       }
-      // Lấy danh sách phim liên quan
+
       final relatedMovies = await _fetchPopularMovies();
 
       final movie = MovieModel.fromMap(doc.data()!);
-      final tmdbId = movie.id; //ID TMDB
+      final tmdbId = movie.id;
 
-      //Goi api de lay trailer
+      // Lấy trailer
       String? trailerKey;
       final videoResponse = await http.get(
         Uri.parse(
           'https://api.themoviedb.org/3/movie/$tmdbId/videos?api_key=d595cdbd770bb65807690dc099be347a',
         ),
       );
-      print(
-        'Video API response: ${videoResponse.statusCode} - ${videoResponse.body}',
-      );
+
       if (videoResponse.statusCode == 200) {
         final videos =
             json.decode(videoResponse.body)['results'] as List<dynamic>;
@@ -67,19 +82,9 @@ class MovieDetailBloc extends Bloc<MovieDetailEvent, MovieDetailState> {
             orElse: () => null,
           );
           trailerKey = trailer != null ? trailer['key']?.toString() : null;
-          print('Trailer key: $trailerKey, Type: ${trailerKey.runtimeType}');
-          // Kiểm tra định dạng YouTube video ID
-          if (trailerKey != null &&
-              !RegExp(r'^[a-zA-Z0-9_-]{11}$').hasMatch(trailerKey)) {
-            print('Invalid YouTube video ID: $trailerKey');
-            trailerKey = null;
-          }
-        } else {
-          print('No videos found for movie ID: ${event.movieId}');
         }
-      } else {
-        print('Failed to load videos: ${videoResponse.statusCode}');
       }
+
       emit(
         MovieDetailLoaded(
           movie: movie,
@@ -87,10 +92,8 @@ class MovieDetailBloc extends Bloc<MovieDetailEvent, MovieDetailState> {
           relatedMovies: relatedMovies,
         ),
       );
-      print('State emitted: MovieDetailLoaded');
     } catch (e) {
       emit(MovieDetailError('Lỗi: $e'));
-      print('Error occurred: $e');
     }
   }
 }

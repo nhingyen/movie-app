@@ -154,8 +154,10 @@ class _SearchMovieScreenState extends State<SearchMovieScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>
-                                      MovieDetailScreen(movieId: movie.id),
+                                  builder: (context) => MovieDetailScreen(
+                                    movieId: movie.id.toString(),
+                                    initialMovie: movie,
+                                  ),
                                 ),
                               );
                             },
