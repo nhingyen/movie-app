@@ -54,7 +54,7 @@ class _CustomFooterState extends State<CustomFooter> {
       width: double.infinity,
       decoration: const BoxDecoration(
         color: Colors.black,
-        border: Border(top: BorderSide(color: Colors.white, width: 0.5)),
+        border: Border(top: BorderSide(color: Colors.black, width: 0.5)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
