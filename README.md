@@ -1,21 +1,70 @@
-# movie_app
+# Movie Finder App
 
-A new Flutter project.
+A movie streaming application built with Flutter, with data stored in Firebase Firestore.
+The app displays detailed movie information including title, description, genre, poster, duration, release year, and video trailer.
+It also comes with a set of basic and user-friendly features for easy interaction.
 
-## Getting Started
+## Features
 
-This project is a starting point for a Flutter application.
+- Watch recommended movies
+- Watch series
+- Browse movies by category
+- View movie details
+- Save favorite movies
+- View favorite movies list
+- Search movies
+- Watch video trailers
 
-A few resources to get you started if this is your first Flutter project:
+## Api Documentation
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+https://www.themoviedb.org/
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Tech Stack
+
+**Client:** Dart, Flutter
+
+**Server:** Node, Firestore
+
+## Installation
+
+Install my-project with github
+
+```bash
+  git clone https://github.com/nhingyen/movie-app.git
+```
+
+```bash
+  # Go into the repository
+  $ cd movie-app
+```
+
+```bash
+  # Install dependencies
+  $ flutter pub get
+```
+
+## Running Tests
+
+```bash
+  flutter run
+```
 
 run script to push .json to Firestore
-cd tools/push_to_firestore
-npm install
-node push_movies.js
+
+```bash
+  #run script
+  npm install
+  node push_movies.js
+```
+
+## Screenshots
+
+![App Screenshot](https://raw.githubusercontent.com/nhingyen/movie-app/main/lib/assets/screenshots/screenshot_home1home1.jpg)
+![App Screenshot](https://raw.githubusercontent.com/nhingyen/movie-app/main/lib/assets/screenshots/screenshot_home2.jpg.jpg)
+![App Screenshot](https://raw.githubusercontent.com/nhingyen/movie-app/main/lib/assets/screenshots/screenshot_series.jpg.jpg)
+![App Screenshot](https://raw.githubusercontent.com/nhingyen/movie-app/main/lib/assets/screenshots/screenshot_popular_movies.jpg)
+![App Screenshot](https://raw.githubusercontent.com/nhingyen/movie-app/main/lib/assets/screenshots/screenshot_toprated.jpg)
+![App Screenshot](https://raw.githubusercontent.com/nhingyen/movie-app/main/lib/assets/screenshots/screenshot_detail.jpg)
+![App Screenshot](https://raw.githubusercontent.com/nhingyen/movie-app/main/lib/assets/screenshots/screenshot_detail2.jpg)
+![App Screenshot](https://raw.githubusercontent.com/nhingyen/movie-app/main/lib/assets/screenshots/screenshot_favorite.jpg)
+![App Screenshot](https://raw.githubusercontent.com/nhingyen/movie-app/main/lib/assets/screenshots/screenshot_search.jpg)
