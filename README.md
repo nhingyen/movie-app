@@ -59,13 +59,12 @@ run script to push .json to Firestore
 
 ## Screenshots
 
-![App Screenshot](https://raw.githubusercontent.com/nhingyen/movie-app/main/lib/assets/screenshots/screenshot_home1home1.jpg)
-![App Screenshot](https://raw.githubusercontent.com/nhingyen/movie-app/main/lib/assets/screenshots/screenshot_home2.jpg.jpg)
-![App Screenshot](https://raw.githubusercontent.com/nhingyen/movie-app/main/lib/assets/screenshots/screenshot_series.jpg.jpg)
-![App Screenshot](https://raw.githubusercontent.com/nhingyen/movie-app/main/lib/assets/screenshots/screenshot_popular_movies.jpg)
-![App Screenshot](https://raw.githubusercontent.com/nhingyen/movie-app/main/lib/assets/screenshots/screenshot_toprated.jpg)
-![App Screenshot](https://raw.githubusercontent.com/nhingyen/movie-app/main/lib/assets/screenshots/screenshot_detail.jpg)
-![App Screenshot](https://raw.githubusercontent.com/nhingyen/movie-app/main/lib/assets/screenshots/screenshot_detail2.jpg)
-![App Screenshot](https://raw.githubusercontent.com/nhingyen/movie-app/main/lib/assets/screenshots/screenshot_favorite.jpg)
-![App Screenshot](https://raw.githubusercontent.com/nhingyen/movie-app/main/lib/assets/screenshots/screenshot_search.jpg)
+![App Screenshot](https://github.com/nhingyen/movie-app/blob/main/lib/assests/screenshots/screenshot_home1.jpg)
+![App Screenshot](https://github.com/nhingyen/movie-app/blob/main/lib/assests/screenshots/screenshot_home2.jpg)
+![App Screenshot](https://github.com/nhingyen/movie-app/blob/main/lib/assests/screenshots/screenshot_series.jpg)
+![App Screenshot](https://github.com/nhingyen/movie-app/blob/main/lib/assests/screenshots/screenshot_toprated.jpg)
+![App Screenshot](https://github.com/nhingyen/movie-app/blob/main/lib/assests/screenshots/screenshot_popular_movies.jpg)
 ![App Screenshot](https://github.com/nhingyen/movie-app/blob/main/lib/assests/screenshots/screenshot_detail.jpg)
+![App Screenshot](https://github.com/nhingyen/movie-app/blob/main/lib/assests/screenshots/screenshot_detail2.jpg)
+![App Screenshot](https://github.com/nhingyen/movie-app/blob/main/lib/assests/screenshots/screenshot_favorite.jpg)
+![App Screenshot](https://github.com/nhingyen/movie-app/blob/main/lib/assests/screenshots/screenshot_search.jpg)
