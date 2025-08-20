@@ -56,15 +56,3 @@ run script to push .json to Firestore
   npm install
   node push_movies.js
 ```
-
-## Screenshots
-
-![App Screenshot](https://github.com/nhingyen/movie-app/blob/main/lib/assests/screenshots/screenshot_home1.jpg)
-![App Screenshot](https://github.com/nhingyen/movie-app/blob/main/lib/assests/screenshots/screenshot_home2.jpg)
-![App Screenshot](https://github.com/nhingyen/movie-app/blob/main/lib/assests/screenshots/screenshot_series.jpg)
-![App Screenshot](https://github.com/nhingyen/movie-app/blob/main/lib/assests/screenshots/screenshot_toprated.jpg)
-![App Screenshot](https://github.com/nhingyen/movie-app/blob/main/lib/assests/screenshots/screenshot_popular_movies.jpg)
-![App Screenshot](https://github.com/nhingyen/movie-app/blob/main/lib/assests/screenshots/screenshot_detail.jpg)
-![App Screenshot](https://github.com/nhingyen/movie-app/blob/main/lib/assests/screenshots/screenshot_detail2.jpg)
-![App Screenshot](https://github.com/nhingyen/movie-app/blob/main/lib/assests/screenshots/screenshot_favorite.jpg)
-![App Screenshot](https://github.com/nhingyen/movie-app/blob/main/lib/assests/screenshots/screenshot_search.jpg)
