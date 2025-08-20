@@ -68,3 +68,4 @@ run script to push .json to Firestore
 ![App Screenshot](https://raw.githubusercontent.com/nhingyen/movie-app/main/lib/assets/screenshots/screenshot_detail2.jpg)
 ![App Screenshot](https://raw.githubusercontent.com/nhingyen/movie-app/main/lib/assets/screenshots/screenshot_favorite.jpg)
 ![App Screenshot](https://raw.githubusercontent.com/nhingyen/movie-app/main/lib/assets/screenshots/screenshot_search.jpg)
+![App Screenshot](https://github.com/nhingyen/movie-app/blob/main/lib/assests/screenshots/screenshot_detail.jpg)
