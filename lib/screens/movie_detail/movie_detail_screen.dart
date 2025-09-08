@@ -147,7 +147,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
           ..setBackgroundColor(const Color(0x00000000))
           ..loadRequest(
             Uri.parse(
-              'https://www.youtube.com/embed/$trailerKey?autoplay=0&mute=1',
+              'https://www.youtube.com/embed/$trailerKey?autoplay=0&mute=0',
             ),
           );
       } catch (e) {
@@ -157,8 +157,9 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
     }
 
     return SingleChildScrollView(
-      key:
-          UniqueKey(), // Đảm bảo mỗi lần render tạo mới widget, tránh lặp nội dung
+      // key:
+      // UniqueKey(), // Đảm bảo mỗi lần render tạo mới widget, tránh lặp nội dung
+      key: PageStorageKey('movie_detail_${widget.movieId}'),
       physics: const ClampingScrollPhysics(), // Kiểm soát cuộn mượt mà
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
