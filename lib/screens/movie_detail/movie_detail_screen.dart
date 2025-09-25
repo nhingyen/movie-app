@@ -411,8 +411,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                           height: 235, // Chiều cao cố định để tránh lỗi cuộn
                           child: ListView.builder(
                             scrollDirection: Axis.horizontal,
-                            physics:
-                                const NeverScrollableScrollPhysics(), // Ngăn cuộn bên trong
+                            physics: const BouncingScrollPhysics(),
                             itemCount: popularMovies.length > 7
                                 ? 7
                                 : popularMovies.length,
