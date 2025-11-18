@@ -56,3 +56,23 @@ run script to push .json to Firestore
   npm install
   node push_movies.js
 ```
+
+📸 Screenshots
+
+<div style="display: flex; justify-content: space-between;">
+<img src="assets/screenshots/screenshot_home1.jpg" width="32%" alt="Screen 1" />
+<img src="assets/screenshots/screenshot_.jpg" width="32%" alt="Screen 2" />
+<img src="assets/screenshots/screenshot_popular_movies.jpg" width="32%" alt="Screen 3" />
+</div>
+
+<div style="display: flex; justify-content: space-between;">
+<img src="assets/screenshots/screenshot_series.jpg" width="32%" alt="Screen 1" />
+<img src="assets/screenshots/screenshot_toprated.jpg" width="32%" alt="Screen 2" />
+<img src="assets/screenshots/screenshot_search.jpg" width="32%" alt="Screen 3" />
+</div>
+
+<div style="display: flex; justify-content: space-between;">
+<img src="assets/screenshots/screenshot_detail.jpg" width="32%" alt="Screen 1" />
+<img src="assets/screenshots/screenshot_detail2.jpg" width="32%" alt="Screen 2" />
+<img src="assets/screenshots/screenshot_favorite.jpg" width="32%" alt="Screen 3" />
+</div>
